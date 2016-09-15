@@ -193,8 +193,9 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
     right.foreach(f)
   }
 
-  override def union(other: TweetSet): TweetSet =
-    other.union(left.union(right)).incl(elem);
+  final override def union(other: TweetSet): TweetSet = {
+    left union ((right union other) incl elem)
+  }
 
   /**
     * Returns the tweet from this set which has the greatest retweet count.
@@ -258,17 +259,25 @@ object GoogleVsApple {
   val google = List("android", "Android", "galaxy", "Galaxy", "nexus", "Nexus")
   val apple = List("ios", "iOS", "iphone", "iPhone", "ipad", "iPad")
 
-  lazy val googleTweets: TweetSet = ???
-  lazy val appleTweets: TweetSet = ???
+  def extractMatchingTweetSet (words : List[String]) = {
+    TweetReader
+      .allTweets
+      .filter(
+        (tweet: Tweet) => words.exists(word => tweet.text.contains(word)))
+  }
+
+  lazy val googleTweets: TweetSet = extractMatchingTweetSet(google)
+  lazy val appleTweets: TweetSet = extractMatchingTweetSet(apple)
 
   /**
     * A list of all tweets mentioning a keyword from either apple or google,
     * sorted by the number of retweets.
     */
-  lazy val trending: TweetList = ???
+  lazy val trending: TweetList = googleTweets.union(appleTweets).descendingByRetweet
 }
 
 object Main extends App {
   // Print the trending tweets
   GoogleVsApple.trending foreach println
+
 }
