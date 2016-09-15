@@ -4,6 +4,7 @@ import TweetReader._
 
 import scala.annotation.tailrec
 
+
 /**
   * A class to represent tweets.
   */
@@ -11,6 +12,19 @@ class Tweet(val user: String, val text: String, val retweets: Int) {
   override def toString: String =
     "User: " + user + "\n" +
       "Text: " + text + " [" + retweets + "]"
+
+
+}
+
+object Util {
+
+  def max(map: Tweet => Double)(tic: Tweet, tac: Tweet) =
+    if (tic == null) tac
+    else if (tac == null) tic
+    else if (map(tic) < map(tac))
+      tac
+    else
+      tic
 }
 
 /**
@@ -63,7 +77,7 @@ abstract class TweetSet {
     * Question: Should we implment this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def mostRetweeted: Tweet = ???
+  def mostRetweeted: Tweet
 
   /**
     * Returns a list containing all tweets of this set, sorted by retweet count
@@ -74,8 +88,7 @@ abstract class TweetSet {
     * Question: Should we implment this method here, or should it remain abstract
     * and be implemented in the subclasses?
     */
-  def descendingByRetweet: TweetList = ???
-
+  def descendingByRetweet: TweetList
   /**
     * The following methods are already implemented
     */
@@ -121,6 +134,28 @@ class Empty extends TweetSet {
   def foreach(f: Tweet => Unit): Unit = ()
 
   override def union(that: TweetSet): TweetSet = that;
+
+  /**
+    * Returns the tweet from this set which has the greatest retweet count.
+    *
+    * Calling `mostRetweeted` on an empty set should throw an exception of
+    * type `java.util.NoSuchElementException`.
+    *
+    * Question: Should we implment this method here, or should it remain abstract
+    * and be implemented in the subclasses?
+    */
+  override def mostRetweeted: Tweet = null;
+
+  /**
+    * Returns a list containing all tweets of this set, sorted by retweet count
+    * in descending order. In other words, the head of the resulting list should
+    * have the highest retweet count.
+    *
+    * Hint: the method `remove` on TweetSet will be very useful.
+    * Question: Should we implment this method here, or should it remain abstract
+    * and be implemented in the subclasses?
+    */
+  override def descendingByRetweet: TweetList = Nil
 }
 
 class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
@@ -159,7 +194,37 @@ class NonEmpty(elem: Tweet, left: TweetSet, right: TweetSet) extends TweetSet {
   }
 
   override def union(other: TweetSet): TweetSet =
-    other.union(left.union(right)).incl(elem)
+    other.union(left.union(right)).incl(elem);
+
+  /**
+    * Returns the tweet from this set which has the greatest retweet count.
+    *
+    * Calling `mostRetweeted` on an empty set should throw an exception of
+    * type `java.util.NoSuchElementException`.
+    *
+    * Question: Should we implment this method here, or should it remain abstract
+    * and be implemented in the subclasses?
+    */
+  override def mostRetweeted: Tweet = {
+    val mostRetweetedOfLeft = left.mostRetweeted
+    val mostRetweetedOfRight = right.mostRetweeted
+    def maxTweets = Util.max(t => t.retweets) (_, _)
+    return maxTweets(maxTweets(elem, mostRetweetedOfRight), mostRetweetedOfLeft)
+  }
+
+  /**
+    * Returns a list containing all tweets of this set, sorted by retweet count
+    * in descending order. In other words, the head of the resulting list should
+    * have the highest retweet count.
+    *
+    * Hint: the method `remove` on TweetSet will be very useful.
+    * Question: Should we implment this method here, or should it remain abstract
+    * and be implemented in the subclasses?
+    */
+  override def descendingByRetweet: TweetList = {
+    val mostRetweeted = this.mostRetweeted
+    new Cons(mostRetweeted, this.remove(mostRetweeted).descendingByRetweet)
+  }
 }
 
 trait TweetList {
