@@ -58,6 +58,11 @@ class HuffmanSuite extends FunSuite {
     assert(until(singleton, combine)(leaflist) === List(Fork(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3),Leaf('x',4),List('e', 't', 'x'),7)))
   }
 
+  test("createCodeTree"){
+    val chars = string2Chars("Text")
+    assert(createCodeTree(chars) === Fork(Fork(Leaf('t',1),Leaf('x',1),List('t', 'x'),2),Fork(Leaf('e',1),Leaf('T',1),List('e', 'T'),2),List('t', 'x', 'e', 'T'),4))
+  }
+
   test("decode french secret") {
     assert(decodedSecret === List('h', 'u', 'f', 'f', 'm', 'a', 'n', 'e', 's', 't', 'c', 'o', 'o', 'l'))
   }
@@ -69,6 +74,15 @@ class HuffmanSuite extends FunSuite {
   test("decode and encode a very short text should be identity") {
     new TestTrees {
       assert(decode(t1, encode(t1)("ab".toList)) === "ab".toList)
+    }
+  }
+  test("quick encode") {
+    new TestTrees {
+      assert(quickRencodedSecret === rencodedSecret)
+      assert(decode(frenchCode, (quickEncode(frenchCode)(string2Chars("anothercasetestjustforfun")))) ===  string2Chars("anothercasetestjustforfun"))
+      private val charsWithSpace: List[Char] = string2Chars("a b")
+      val spaceCodeTree = createCodeTree(charsWithSpace)
+      assert(decode(spaceCodeTree, (quickEncode(spaceCodeTree)(charsWithSpace))) ===  charsWithSpace)
     }
   }
 
