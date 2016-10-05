@@ -58,18 +58,12 @@ object Anagrams {
   }
 
   def wordOccurrences(w: Word): Occurrences = {
+    w.toList
+      .groupBy(c => c.toLower)
+      .map(e => (e._1, e._2.size))
+      .toList
+      .sortBy(e => e._1)
 
-    def iter(currentLeftOver: Word, accOccurences: Occurrences): Occurrences = {
-      if (currentLeftOver.isEmpty) accOccurences
-      else {
-        val charToExtract = currentLeftOver.head
-        val (countExtracted, newLeftOver) = extractAndCountOccurences(charToExtract, currentLeftOver)
-        val newOccurrences = sortedInsert((charToExtract, countExtracted), accOccurences)((x, y) => x._1 < y._1)
-        iter(newLeftOver, newOccurrences)
-      }
-    }
-
-    iter(w.toLowerCase, List())
   }
 
   /** Converts a sentence into its character occurrence list. */
