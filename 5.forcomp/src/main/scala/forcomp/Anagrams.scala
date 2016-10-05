@@ -121,7 +121,15 @@ object Anagrams {
     * Note that the order of the occurrence list subsets does not matter -- the subsets
     * in the example above could have been displayed in some other order.
     */
-  def combinations(occurrences: Occurrences): List[Occurrences] = ???
+  def combinations(occurrences: Occurrences): List[Occurrences] = occurrences match {
+    case List() => List(List())
+    case head :: tail =>
+      val restCombinations = combinations(tail)
+      for (
+        combination <- restCombinations;
+        substractableCount <- 0 to head._2
+      ) yield subtract(List(head), List((head._1, substractableCount))) ::: combination
+  }
 
   /** Subtracts occurrence list `y` from occurrence list `x`.
     *
@@ -133,7 +141,25 @@ object Anagrams {
     * Note: the resulting value is an occurrence - meaning it is sorted
     * and has no zero-entries.
     */
-  def subtract(x: Occurrences, y: Occurrences): Occurrences = ???
+  def subtract(x: Occurrences, y: Occurrences): Occurrences = {
+
+    def substractOneOccurence(current: Occurrences, occurence: (Char, Int)): Occurrences = current match {
+      case Nil => throw new Error("Substracting occurence " + occurence + " to a current Occurences empty")
+      case (c, i) :: tail if c == occurence._1 =>
+        val countToSub: Int = occurence._2
+        if (countToSub > i) throw new Error("Substracting more occurence " + occurence + " than present : " + (c, i))
+        else if (countToSub == i) tail
+        else (c, i - countToSub) :: tail
+      case pair :: tail =>
+        pair :: substractOneOccurence(tail, occurence)
+    }
+
+    y match {
+      case Nil => x
+      case occ :: tail => subtract(substractOneOccurence(x, occ), tail)
+    }
+
+  }
 
   /** Returns a list of all anagram sentences of the given sentence.
     *
