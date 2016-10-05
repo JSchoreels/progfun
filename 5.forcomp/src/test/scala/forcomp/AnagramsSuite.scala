@@ -10,6 +10,10 @@ import Anagrams._
 @RunWith(classOf[JUnitRunner])
 class AnagramsSuite extends FunSuite  {
 
+  test("extractAndCountOccurences abcda"){
+    assert(extractAndCountOccurences('a', "abaaaaacda") === (7,"bcd"))
+  }
+
   test("wordOccurrences: abcd") {
     assert(wordOccurrences("abcd") === List(('a', 1), ('b', 1), ('c', 1), ('d', 1)))
   }
